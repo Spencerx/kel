@@ -1,0 +1,81 @@
+hash: 4934c8c97568aff70e0d50ad0829cf692b8401d32866aded8934d09fcb5e3b96
+updated: 2016-05-03T16:50:49.165332403-06:00
+imports:
+- name: github.com/asaskevich/govalidator
+  version: edd46cdac249b001c7b7d88c6d43993ea875e8d8
+- name: github.com/bgentry/speakeasy
+  version: 36e9cfdd690967f4f690c6edcc9ffacd006014a0
+- name: github.com/brosner/go-json-spec-handler
+  version: 51b90d2573b8e3036fe76f1659efc90ed4e3345b
+- name: github.com/BurntSushi/toml
+  version: f0aeabca5a127c4078abb8c8d64298b147264b55
+- name: github.com/fsnotify/fsnotify
+  version: 30411dbcefb7a1da7e84f75530ad3abe4011b4f8
+- name: github.com/golang/protobuf
+  version: 7cc19b78d562895b13596ddce7aafb59dd789318
+  subpackages:
+  - proto
+- name: github.com/hashicorp/hcl
+  version: 9a905a34e6280ce905da1a32344b25e81011197a
+  subpackages:
+  - hcl/ast
+  - hcl/parser
+  - hcl/token
+  - json/parser
+  - hcl/scanner
+  - hcl/strconv
+  - json/scanner
+  - json/token
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/kelproject/kel
+  version: ""
+  subpackages:
+  - cmd
+- name: github.com/kelproject/kel-go
+  version: bc4e57141b37849f2f68166480ac04d734769a98
+- name: github.com/kr/pretty
+  version: add1dbc86daf0f983cd4a48ceb39deb95c729b67
+- name: github.com/kr/text
+  version: bb797dc4fb8320488f47bf11de07a733d7233e1f
+- name: github.com/magiconair/properties
+  version: c265cfa48dda6474e208715ca93e987829f572f8
+- name: github.com/mgutz/ansi
+  version: c286dcecd19ff979eeb73ea444e479b903f2cfcb
+- name: github.com/mitchellh/mapstructure
+  version: d2dd0262208475919e1a362f675cfc0e7c10e905
+- name: github.com/spf13/cast
+  version: 27b586b42e29bec072fe7379259cc719e1289da6
+- name: github.com/spf13/cobra
+  version: 336d629de064dbb12166b46c06039dbcfb935de1
+- name: github.com/spf13/jwalterweatherman
+  version: 33c24e77fb80341fe7130ee7c594256ff08ccc46
+- name: github.com/spf13/pflag
+  version: cb88ea77998c3f024757528e3305022ab50b43be
+- name: github.com/spf13/viper
+  version: f904a1790545169368e8d37badd19d1895d94f29
+- name: golang.org/x/net
+  version: 35ec611a141ee705590b9eb64d673f9e6dfeb1ac
+  subpackages:
+  - context
+- name: golang.org/x/oauth2
+  version: 8434495902bd0900797016affe4ca35c55babb3f
+  subpackages:
+  - internal
+- name: golang.org/x/sys
+  version: b776ec39b3e54652e09028aaaaac9757f4f8211a
+  subpackages:
+  - unix
+- name: google.golang.org/appengine
+  version: e234e71924d4aa52444bc76f2f831f13fa1eca60
+  subpackages:
+  - urlfetch
+  - internal
+  - internal/urlfetch
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/remote_api
+- name: gopkg.in/yaml.v2
+  version: a83829b6f1293c91addabc89d0571c246397bbf4
+devImports: []

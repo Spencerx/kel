@@ -1,0 +1,11 @@
+package: .
+import:
+- package: github.com/kelproject/kel-go
+- package: github.com/kelproject/kel
+  subpackages:
+  - cmd
+- package: github.com/mgutz/ansi
+- package: github.com/spf13/cobra
+- package: github.com/spf13/viper
+- package: golang.org/x/oauth2
+- package: github.com/bgentry/speakeasy
