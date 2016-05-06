@@ -76,7 +76,7 @@ func (uri *URI) String() string {
 // GetURIFromArg will parse a string looking for a pattern to build a URI. The
 // values may come from the argument or from the default cluster.
 func GetURIFromArg(arg string) (*URI, error) {
-	uri, err = ParseURI(arg)
+	uri, err := ParseURI(arg)
 	if err != nil {
 		if config.DefaultCluster == nil {
 			return nil, errors.New("first argument must be a URI or a default cluster must be set")

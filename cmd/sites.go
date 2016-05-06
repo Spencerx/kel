@@ -95,6 +95,7 @@ var sitesListCmd = &cobra.Command{
 			fmt.Fprintf(os.Stderr, "Usage: kel sites list <uri>|<name>\n")
 			fatal(msg)
 		}
+		usage("")
 	},
 }
 
