@@ -65,7 +65,7 @@ func (uri *URI) Equals(other *URI) bool {
 
 func (uri *URI) String() string {
 	if uri.ResourceGroup == "" {
-		return uri.Host
+		return fmt.Sprintf("//%s", uri.Host)
 	}
 	if uri.Site == "" {
 		return fmt.Sprintf("//%s/%s", uri.Host, uri.ResourceGroup)
