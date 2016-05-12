@@ -11,6 +11,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
+var (
+	flagURI string
+)
+
 // RootCmd is ...
 var RootCmd = &cobra.Command{
 	Use:   "kel",
@@ -18,9 +22,10 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
+	RootCmd.PersistentFlags().StringVarP(&flagURI, "uri", "", "", "URI for this invocation")
 }
 
-func setupAuth() *http.Client {
+func getClusterAuthClient() *http.Client {
 	oauth2.RegisterBrokenAuthHeaderProvider("https://identity.gondor.io/")
 	conf := &oauth2.Config{
 		ClientID: "KtcICiPMAII8FAeArUoDB97zmjqltllyUDev8HOS",
@@ -52,6 +57,17 @@ func setupAuth() *http.Client {
 		config.Save()
 	}
 	return conf.Client(ctx, token)
+}
+
+func setupAuth() *http.Client {
+	var hc *http.Client
+	switch config.Auth {
+	case AuthCluster:
+		hc = getClusterAuthClient()
+	case AuthNone:
+		hc = http.DefaultClient
+	}
+	return hc
 }
 
 func setupKelClient(uri *URI) *kel.Client {

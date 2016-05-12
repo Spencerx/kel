@@ -12,9 +12,15 @@ import (
 	"golang.org/x/oauth2"
 )
 
+const (
+	AuthNone    = "none"
+	AuthCluster = "cluster"
+)
+
 // Config is the global configuration for the Kel command-line client.
 type Config struct {
 	DefaultCluster *URI                     `json:"cluster,omitempty"`
+	Auth           string                   `json:"auth,omitempty"`
 	SitePaths      map[string]*URI          `json:"site_paths"`
 	Tokens         map[string]*oauth2.Token `json:"tokens"`
 }
@@ -23,6 +29,7 @@ var config *Config
 
 func init() {
 	config = &Config{
+		Auth:      AuthCluster,
 		SitePaths: make(map[string]*URI),
 		Tokens:    make(map[string]*oauth2.Token),
 	}
@@ -56,6 +63,9 @@ var configGetCmd = &cobra.Command{
 		case "cluster":
 			fmt.Println(config.DefaultCluster)
 			break
+		case "auth":
+			fmt.Println(config.Auth)
+			break
 		}
 	},
 }
@@ -82,6 +92,16 @@ var configSetCmd = &cobra.Command{
 			}
 			config.DefaultCluster = uri
 			config.Save()
+			break
+		case "auth":
+			switch args[1] {
+			case AuthNone, AuthCluster:
+				config.Auth = args[1]
+				config.Save()
+				break
+			default:
+				fatal("invalid authentication type")
+			}
 			break
 		}
 	},

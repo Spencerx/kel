@@ -32,25 +32,20 @@ var resourceGroupCreateCmd = &cobra.Command{
 	Short: "Create a resource group",
 	Run: func(cmd *cobra.Command, args []string) {
 		usage := func(msg string) {
-			fmt.Fprintf(os.Stderr, "Usage: kel resource-groups create <uri>|<name>\n")
+			fmt.Fprintf(os.Stderr, "Usage: kel resource-groups create [name]\n")
 			fatal(msg)
 		}
-		if len(args) != 1 {
-			usage("too few arguments.")
-		}
-		var uri *URI
-		var err error
-		uri, err = ParseURI(args[0])
+		uri, err := LookupURI()
 		if err != nil {
-			if config.DefaultCluster == nil {
-				usage("first argument must be a URI or a default cluster must be set.")
-			}
-			uri = &URI{}
-			*uri = *config.DefaultCluster
+			usage(err.Error())
+		}
+		if len(args) == 1 {
 			uri.ResourceGroup = args[0]
+		} else if len(args) > 1 {
+			usage("too many arguments")
 		}
 		if uri.ResourceGroup == "" {
-			usage("must specify resource group in URI.")
+			usage("missing resource group (specify with optional argument or in URI)")
 		}
 		kc := setupKelClient(uri)
 		resourceGroup := kel.ResourceGroup{
@@ -73,20 +68,15 @@ var resourceGroupListCmd = &cobra.Command{
 	Short: "List resource groups",
 	Run: func(cmd *cobra.Command, args []string) {
 		usage := func(msg string) {
-			fmt.Fprintf(os.Stderr, "Usage: kel resource-groups list [uri]\n")
+			fmt.Fprintf(os.Stderr, "Usage: kel resource-groups list\n")
 			fatal(msg)
 		}
-		var uri *URI
-		if len(args) == 0 {
-			uri = config.DefaultCluster
-		} else if len(args) == 1 {
-			var err error
-			uri, err = ParseURI(args[0])
-			if err != nil {
-				usage(fmt.Sprintf("first argument must be a URI (error: %v)", err))
-			}
-		} else {
-			usage("too many arguments.")
+		if len(args) > 0 {
+			usage("too many arguments")
+		}
+		uri, err := LookupURI()
+		if err != nil {
+			usage(err.Error())
 		}
 		kc := setupKelClient(uri)
 		var resourceGroups []*kel.ResourceGroup

@@ -73,26 +73,14 @@ func (uri *URI) String() string {
 	return fmt.Sprintf("//%s/%s/%s", uri.Host, uri.ResourceGroup, uri.Site)
 }
 
-// GetURIFromArg will parse a string looking for a pattern to build a URI. The
-// values may come from the argument or from the default cluster.
-func GetURIFromArg(arg string) (*URI, error) {
-	uri, err := ParseURI(arg)
+// LookupURI will find the most relevant URI string and parse it.
+func LookupURI() (*URI, error) {
+	uri, err := ParseURI(flagURI)
 	if err != nil {
 		if config.DefaultCluster == nil {
-			return nil, errors.New("first argument must be a URI or a default cluster must be set")
+			return nil, errors.New("--uri must be given or a default cluster must be set")
 		}
-		if arg == "" {
-			return config.DefaultCluster, nil
-		}
-		switch strings.Count(arg, "/") {
-		case 0:
-			if config.DefaultCluster.ResourceGroup == "" {
-				// arg is the resource group
-			} else {
-				// arg is the site
-			}
-			break
-		}
+		return config.DefaultCluster, nil
 	}
 	return uri, nil
 }

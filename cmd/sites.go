@@ -37,21 +37,14 @@ var sitesCreateCmd = &cobra.Command{
 	Short: "Create a site",
 	Run: func(cmd *cobra.Command, args []string) {
 		usage := func(msg string) {
-			fmt.Fprintf(os.Stderr, "Usage: kel sites create <uri>|<name>\n")
+			fmt.Fprintf(os.Stderr, "Usage: kel sites create [name]\n")
 			fatal(msg)
 		}
-		if len(args) != 1 {
-			usage("too few arguments.")
-		}
-		var uri *URI
-		var err error
-		uri, err = ParseURI(args[0])
+		uri, err := LookupURI()
 		if err != nil {
-			if config.DefaultCluster == nil {
-				usage("first argument must be a URI or a default cluster must be set.")
-			}
-			uri = &URI{}
-			*uri = *config.DefaultCluster
+			fatal(err.Error())
+		}
+		if len(args) == 1 {
 			switch strings.Count(args[0], "/") {
 			case 0:
 				uri.Site = args[0]
@@ -64,6 +57,8 @@ var sitesCreateCmd = &cobra.Command{
 			default:
 				usage("invalid resource group / site pair")
 			}
+		} else if len(args) > 1 {
+			usage("too many arguments")
 		}
 		if uri.ResourceGroup == "" || uri.Site == "" {
 			usage("must specify resource group and site in URI.")
@@ -92,10 +87,36 @@ var sitesListCmd = &cobra.Command{
 	Short: "List sites",
 	Run: func(cmd *cobra.Command, args []string) {
 		usage := func(msg string) {
-			fmt.Fprintf(os.Stderr, "Usage: kel sites list <uri>|<name>\n")
+			fmt.Fprintf(os.Stderr, "Usage: kel sites list <resource-group>\n")
 			fatal(msg)
 		}
-		usage("")
+		uri, err := LookupURI()
+		if err != nil {
+			usage(err.Error())
+		}
+		if len(args) == 1 {
+			uri.ResourceGroup = args[0]
+		} else if len(args) > 1 {
+			usage("too many arguments")
+		}
+		if uri.ResourceGroup == "" {
+			usage("missing resource group (specify with optional argument or in URI)")
+		}
+		kc := setupKelClient(uri)
+		var resourceGroup kel.ResourceGroup
+		if err := kc.ResourceGroups.Get(uri.ResourceGroup, &resourceGroup).Do(); err != nil {
+			if err == kel.ErrNotFound {
+				fatal(fmt.Sprintf("resource group %q does not exist.", uri.ResourceGroup))
+			}
+			fatal(fmt.Sprintf("failed to get resource group (error: %v)", err))
+		}
+		var sites []*kel.Site
+		if err := kc.Sites.List(&resourceGroup, &sites).Do(); err != nil {
+			fatal(fmt.Sprintf("failed to list sites (error: %v)", err))
+		}
+		for i := range sites {
+			fmt.Println(sites[i].Name)
+		}
 	},
 }
 
@@ -107,19 +128,32 @@ var activateCmd = &cobra.Command{
 			fmt.Fprintf(os.Stderr, "Usage: kel activate [--force] <site-url>\n")
 			fatal(msg)
 		}
-		if len(args) != 1 {
-			usage("not enough arguments")
+		uri, err := LookupURI()
+		if err != nil {
+			fatal(err.Error())
+		}
+		if len(args) == 1 {
+			switch strings.Count(args[0], "/") {
+			case 0:
+				uri.Site = args[0]
+				break
+			case 1:
+				parts := strings.Split(args[0], "/")
+				uri.ResourceGroup = parts[0]
+				uri.Site = parts[1]
+				break
+			default:
+				usage("invalid resource group / site pair")
+			}
+		} else if len(args) > 1 {
+			usage("too many arguments")
+		}
+		if uri.ResourceGroup == "" || uri.Site == "" {
+			usage("must specify resource group and site in URI.")
 		}
 		cwd, err := os.Getwd()
 		if err != nil {
 			fatal(fmt.Sprintf("failed to get current working directory (%s)", err.Error()))
-		}
-		uri, err := ParseURI(args[0])
-		if err != nil {
-			fatal(fmt.Sprintf("failed to parse site URL (%v)", err))
-		}
-		if uri.Site == "" {
-			fatal(fmt.Sprintf("no site provided in URI (given: %s)", uri))
 		}
 		if _, ok := config.SitePaths[cwd]; ok && !flagForce {
 			msg := "this directory is already activated"
@@ -140,7 +174,9 @@ var activateCmd = &cobra.Command{
 			}
 			fatal(fmt.Sprintf("failed to get resource group (error: %v)", err))
 		}
-		var site kel.Site
+		site := kel.Site{
+			ResourceGroup: &resourceGroup,
+		}
 		if err := kc.Sites.Get(uri.Site, &site).Do(); err != nil {
 			if err == kel.ErrNotFound {
 				fatal(fmt.Sprintf("site %q does not exist.", uri.Site))

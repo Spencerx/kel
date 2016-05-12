@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	red   = ansi.ColorFunc("red")
-	green = ansi.ColorFunc("green")
+	red       = ansi.ColorFunc("red")
+	green     = ansi.ColorFunc("green")
+	whiteBold = ansi.ColorFunc("white+bold")
 )
 
 func success(s string) {
