@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"sync"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
@@ -38,6 +39,46 @@ func init() {
 		configGetCmd,
 		configSetCmd,
 	)
+}
+
+type TokenSaver interface {
+	Save(*oauth2.Token) error
+}
+
+type cachedTokenSource struct {
+	pts oauth2.TokenSource // called when t is expired.
+	ts  TokenSaver
+}
+
+func newCachedTokenSource(src oauth2.TokenSource, ts TokenSaver) oauth2.TokenSource {
+	return &cachedTokenSource{
+		pts: src,
+		ts:  ts,
+	}
+}
+
+func (s *cachedTokenSource) Token() (*oauth2.Token, error) {
+	t, err := s.pts.Token()
+	if err != nil {
+		return nil, err
+	}
+	if err := s.ts.Save(t); err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+type configTokenSaver struct {
+	provider string
+	mtx      sync.Mutex
+}
+
+func (cts *configTokenSaver) Save(token *oauth2.Token) error {
+	cts.mtx.Lock()
+	defer cts.mtx.Unlock()
+	config.Tokens[cts.provider] = token
+	config.Save()
+	return nil
 }
 
 var configCmd = &cobra.Command{

@@ -30,13 +30,15 @@ func getClusterAuthClient() *http.Client {
 	conf := &oauth2.Config{
 		ClientID: "KtcICiPMAII8FAeArUoDB97zmjqltllyUDev8HOS",
 		Endpoint: oauth2.Endpoint{
+			AuthURL:  "https://identity.gondor.io/oauth/authorize/",
 			TokenURL: "https://identity.gondor.io/oauth/token/",
 		},
 	}
 	ctx := oauth2.NoContext
 	var token *oauth2.Token
 	var ok bool
-	token, ok = config.Tokens["identity.gondor.io"]
+	provider := "identity.gondor.io"
+	token, ok = config.Tokens[provider]
 	if !ok {
 		var err error
 		// ask for username
@@ -53,10 +55,13 @@ func getClusterAuthClient() *http.Client {
 		if err != nil {
 			fatal(err.Error())
 		}
-		config.Tokens["identity.gondor.io"] = token
+		config.Tokens[provider] = token
 		config.Save()
 	}
-	return conf.Client(ctx, token)
+	ts := conf.TokenSource(oauth2.NoContext, token)
+	tokenSaver := &configTokenSaver{provider: provider}
+	cachedTokenSource := newCachedTokenSource(ts, tokenSaver)
+	return oauth2.NewClient(oauth2.NoContext, cachedTokenSource)
 }
 
 func setupAuth() *http.Client {
