@@ -136,7 +136,7 @@ var configSetCmd = &cobra.Command{
 			if err != nil {
 				fatal(fmt.Sprintf("failed to parse URI (error: %v)", err))
 			}
-			config.DefaultCluster = uri
+			config.DefaultCluster = &uri
 			config.Save()
 			break
 		case "auth":

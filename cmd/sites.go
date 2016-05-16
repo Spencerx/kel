@@ -157,7 +157,7 @@ var activateCmd = &cobra.Command{
 		}
 		if _, ok := config.Sites[cwd]; ok && !flagForce {
 			msg := "this directory is already activated"
-			if !uri.Equals(config.Sites[cwd].URI) {
+			if !uri.Equals(*config.Sites[cwd].URI) {
 				msg += fmt.Sprintf(" for %s", config.Sites[cwd].URI)
 			} else {
 				msg += " for the given site"
@@ -181,7 +181,7 @@ var activateCmd = &cobra.Command{
 			}
 			fatal(fmt.Sprintf("failed to get site (error: %v)", err))
 		}
-		config.Sites[cwd] = &SiteConfig{URI: uri}
+		config.Sites[cwd] = &SiteConfig{URI: &uri}
 		config.Save()
 		success(fmt.Sprintf("%s/%s has been activated.", uri.ResourceGroup, uri.Site))
 	},

@@ -75,7 +75,7 @@ func setupAuth() *http.Client {
 	return hc
 }
 
-func setupKelClient(uri *URI) *kel.Client {
+func setupKelClient(uri URI) *kel.Client {
 	parts := []string{}
 	if uri.Insecure {
 		parts = append(parts, "http://")

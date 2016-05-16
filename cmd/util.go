@@ -17,17 +17,17 @@ type URI struct {
 }
 
 // ParseURI will parse a given string into a URI
-func ParseURI(value string) (*URI, error) {
+func ParseURI(value string) (URI, error) {
 	var opts url.Values
 	var err error
 	if !strings.HasPrefix(value, "//") {
-		return nil, fmt.Errorf("invalid URI; must begin with //")
+		return URI{}, fmt.Errorf("invalid URI; must begin with //")
 	}
 	if strings.Contains(value, "?") {
 		parts := strings.Split(value, "?")
 		value = parts[0]
 		if opts, err = url.ParseQuery(parts[1]); err != nil {
-			return nil, err
+			return URI{}, err
 		}
 	}
 	var insecure bool
@@ -53,17 +53,17 @@ func ParseURI(value string) (*URI, error) {
 			Insecure:      insecure,
 		}
 	} else {
-		return nil, fmt.Errorf("invalid format")
+		return URI{}, fmt.Errorf("invalid format")
 	}
-	return &uri, nil
+	return uri, nil
 }
 
 // Equals will test equality of two URIs
-func (uri *URI) Equals(other *URI) bool {
+func (uri URI) Equals(other URI) bool {
 	return uri.Host == other.Host && uri.ResourceGroup == other.ResourceGroup && uri.Site == other.Site
 }
 
-func (uri *URI) String() string {
+func (uri URI) String() string {
 	if uri.ResourceGroup == "" {
 		return fmt.Sprintf("//%s", uri.Host)
 	}
@@ -74,13 +74,13 @@ func (uri *URI) String() string {
 }
 
 // LookupURI will find the most relevant URI string and parse it.
-func LookupURI() (*URI, error) {
+func LookupURI() (URI, error) {
 	uri, err := ParseURI(flagURI)
 	if err != nil {
 		if config.DefaultCluster == nil {
-			return nil, errors.New("--uri must be given or a default cluster must be set")
+			return URI{}, errors.New("--uri must be given or a default cluster must be set")
 		}
-		return config.DefaultCluster, nil
+		return *config.DefaultCluster, nil
 	}
 	return uri, nil
 }
