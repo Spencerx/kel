@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -22,17 +23,21 @@ const (
 type Config struct {
 	DefaultCluster *URI                     `json:"cluster,omitempty"`
 	Auth           string                   `json:"auth,omitempty"`
-	SitePaths      map[string]*URI          `json:"site_paths"`
+	Sites          map[string]*SiteConfig   `json:"sites"`
 	Tokens         map[string]*oauth2.Token `json:"tokens"`
+}
+
+type SiteConfig struct {
+	URI *URI `json:"uri,omitempty"`
 }
 
 var config *Config
 
 func init() {
 	config = &Config{
-		Auth:      AuthCluster,
-		SitePaths: make(map[string]*URI),
-		Tokens:    make(map[string]*oauth2.Token),
+		Auth:   AuthCluster,
+		Sites:  make(map[string]*SiteConfig),
+		Tokens: make(map[string]*oauth2.Token),
 	}
 	RootCmd.AddCommand(configCmd)
 	configCmd.AddCommand(
@@ -195,7 +200,9 @@ func (config *Config) Save() {
 	if err != nil {
 		fatal(fmt.Sprintf("failed to encode configuration (%v)", err.Error()))
 	}
-	if err := ioutil.WriteFile(configPath, buf, 0644); err != nil {
+	var out bytes.Buffer
+	json.Indent(&out, buf, "", "  ")
+	if err := ioutil.WriteFile(configPath, out.Bytes(), 0644); err != nil {
 		fatal(fmt.Sprintf("failed to create config.json (%v)", err.Error()))
 	}
 }

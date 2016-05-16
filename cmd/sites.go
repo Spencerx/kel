@@ -155,17 +155,15 @@ var activateCmd = &cobra.Command{
 		if err != nil {
 			fatal(fmt.Sprintf("failed to get current working directory (%s)", err.Error()))
 		}
-		if _, ok := config.SitePaths[cwd]; ok && !flagForce {
+		if _, ok := config.Sites[cwd]; ok && !flagForce {
 			msg := "this directory is already activated"
-			if !uri.Equals(config.SitePaths[cwd]) {
-				msg += fmt.Sprintf(" for %s", config.SitePaths[cwd])
+			if !uri.Equals(config.Sites[cwd].URI) {
+				msg += fmt.Sprintf(" for %s", config.Sites[cwd].URI)
 			} else {
 				msg += " for the given site"
 			}
 			fatal(msg + ". Use --force to override.")
 		}
-		config.SitePaths[cwd] = uri
-		config.Save()
 		kc := setupKelClient(uri)
 		var resourceGroup kel.ResourceGroup
 		if err := kc.ResourceGroups.Get(uri.ResourceGroup, &resourceGroup).Do(); err != nil {
@@ -183,6 +181,8 @@ var activateCmd = &cobra.Command{
 			}
 			fatal(fmt.Sprintf("failed to get site (error: %v)", err))
 		}
+		config.Sites[cwd] = &SiteConfig{URI: uri}
+		config.Save()
 		success(fmt.Sprintf("%s/%s has been activated.", uri.ResourceGroup, uri.Site))
 	},
 }
@@ -195,10 +195,10 @@ var deactivateCmd = &cobra.Command{
 		if err != nil {
 			fatal(fmt.Sprintf("failed to get current working directory (%s)", err.Error()))
 		}
-		if _, ok := config.SitePaths[cwd]; !ok {
+		if _, ok := config.Sites[cwd]; !ok {
 			fatal("nothing to delete")
 		}
-		delete(config.SitePaths, cwd)
+		delete(config.Sites, cwd)
 		config.Save()
 	},
 }

@@ -10,10 +10,10 @@ import (
 
 // URI is the structured form of host/resource-group</site>?opts
 type URI struct {
-	Host          string
-	ResourceGroup string `json:",omitempty"`
-	Site          string `json:",omitempty"`
-	Insecure      bool
+	Host          string `json:"host"`
+	ResourceGroup string `json:"resource-group,omitempty"`
+	Site          string `json:"site,omitempty"`
+	Insecure      bool   `json:"insecure"`
 }
 
 // ParseURI will parse a given string into a URI
