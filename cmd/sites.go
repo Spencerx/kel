@@ -183,6 +183,7 @@ var activateCmd = &cobra.Command{
 		}
 		config.Sites[cwd] = &SiteConfig{URI: &uri}
 		config.Save()
+		SyncSitePlugins(&site)
 		success(fmt.Sprintf("%s/%s has been activated.", uri.ResourceGroup, uri.Site))
 	},
 }
@@ -201,4 +202,16 @@ var deactivateCmd = &cobra.Command{
 		delete(config.Sites, cwd)
 		config.Save()
 	},
+}
+
+// GetActivatedSiteConfig will return the activated site config or nil
+func GetActivatedSiteConfig() *SiteConfig {
+	cwd, err := os.Getwd()
+	if err != nil {
+		fatal(fmt.Sprintf("failed to get current working directory (%s)", err.Error()))
+	}
+	if siteConfig, ok := config.Sites[cwd]; ok {
+		return siteConfig
+	}
+	return nil
 }

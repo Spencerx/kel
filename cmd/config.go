@@ -25,19 +25,22 @@ type Config struct {
 	Auth           string                   `json:"auth,omitempty"`
 	Sites          map[string]*SiteConfig   `json:"sites"`
 	Tokens         map[string]*oauth2.Token `json:"tokens"`
+	Plugins        map[string]*Plugin       `json:"plugins"`
 }
 
 type SiteConfig struct {
-	URI *URI `json:"uri,omitempty"`
+	URI     *URI              `json:"uri,omitempty"`
+	Plugins map[string]string `json:"plugins"`
 }
 
 var config *Config
 
 func init() {
 	config = &Config{
-		Auth:   AuthCluster,
-		Sites:  make(map[string]*SiteConfig),
-		Tokens: make(map[string]*oauth2.Token),
+		Auth:    AuthCluster,
+		Sites:   make(map[string]*SiteConfig),
+		Tokens:  make(map[string]*oauth2.Token),
+		Plugins: make(map[string]*Plugin),
 	}
 	RootCmd.AddCommand(configCmd)
 	configCmd.AddCommand(
@@ -193,6 +196,16 @@ func LoadConfig() {
 	}
 }
 
+// AddPlugin will add the given plugin to the site config.
+func (config *Config) AddPlugin(plugin *Plugin) {
+	if config.Plugins == nil {
+		config.Plugins = make(map[string]*Plugin)
+	}
+	if _, ok := config.Plugins[plugin.String()]; !ok {
+		config.Plugins[plugin.String()] = plugin
+	}
+}
+
 // Save will persist configuration to disk.
 func (config *Config) Save() {
 	configPath := getConfigPath()
@@ -205,4 +218,12 @@ func (config *Config) Save() {
 	if err := ioutil.WriteFile(configPath, out.Bytes(), 0644); err != nil {
 		fatal(fmt.Sprintf("failed to create config.json (%v)", err.Error()))
 	}
+}
+
+// AddPlugin will add the given plugin to the site config.
+func (siteConfig *SiteConfig) AddPlugin(plugin *Plugin) {
+	if siteConfig.Plugins == nil {
+		siteConfig.Plugins = make(map[string]string)
+	}
+	siteConfig.Plugins[plugin.Name] = fmt.Sprintf("=%s", plugin.Version)
 }
