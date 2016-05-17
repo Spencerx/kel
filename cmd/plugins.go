@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"syscall"
 	"time"
 
@@ -52,6 +53,14 @@ func LoadPlugins() {
 				fatal(fmt.Sprintf("plugin matching %s %s was not found.", pluginName, pluginVersionRange))
 			}
 			RootCmd.AddCommand(plugin.AsCmd())
+			// prevent flag parsing for the plugin command
+			args := os.Args[1:]
+			if len(args) >= 1 {
+				if strings.HasPrefix(plugin.Command.Use, args[0]) && len(args[1:]) > 0 {
+					args = append(args[0:1], append([]string{"--"}, args[1:]...)...)
+				}
+			}
+			RootCmd.SetArgs(args)
 		}
 	}
 }
