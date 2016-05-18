@@ -70,28 +70,44 @@ func LoadPlugins() {
 func SyncSitePlugins(site *kel.Site) {
 	siteConfig := GetActivatedSiteConfig()
 
+	var plugins []*Plugin
+
 	fmt.Printf("Fetching plugins... ")
 	time.Sleep(2 * time.Second)
-	plugin := &Plugin{
-		Name:    "kel-build",
-		Version: "0.1.0",
-		Command: PluginCommand{
-			Use:       "build",
-			Short:     "Build me",
-			BinaryURL: "http://localhost:8080/kel-build",
+	plugins = append(
+		plugins,
+		&Plugin{
+			Name:    "kel-build",
+			Version: "0.1.0",
+			Command: PluginCommand{
+				Use:       "build",
+				Short:     "Build me",
+				BinaryURL: "http://localhost:8080/kel-build",
+			},
 		},
-	}
+		&Plugin{
+			Name:    "kel-deploy",
+			Version: "0.1.0",
+			Command: PluginCommand{
+				Use:       "deploy",
+				Short:     "Deploy me",
+				BinaryURL: "http://localhost:8080/kel-deploy",
+			},
+		},
+	)
 	fmt.Println(green("done"))
 
-	if _, ok := config.Plugins[plugin.String()]; !ok {
-		fmt.Printf("Installing plugin %q... ", plugin.Name)
-		if err := plugin.Install(); err != nil {
-			fmt.Printf("%s\n", red("error"))
-			fatal(err.Error())
+	for _, plugin := range plugins {
+		if _, ok := config.Plugins[plugin.String()]; !ok {
+			fmt.Printf("Installing plugin %q... ", plugin.Name)
+			if err := plugin.Install(); err != nil {
+				fmt.Printf("%s\n", red("error"))
+				fatal(err.Error())
+			}
+			siteConfig.AddPlugin(plugin)
+			config.AddPlugin(plugin)
+			fmt.Printf("%s (version: %s)\n", green("installed"), whiteBold(plugin.Version))
 		}
-		siteConfig.AddPlugin(plugin)
-		config.AddPlugin(plugin)
-		fmt.Printf("%s (version: %s)\n", green("installed"), whiteBold(plugin.Version))
 	}
 
 	config.Save()
